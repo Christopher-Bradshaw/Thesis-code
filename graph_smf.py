@@ -4,49 +4,60 @@ import data
 import graph
 import matplotlib.pyplot as plt
 import math
-def schechter(m, ms, os, a, dm):
-  return dm * math.log(10) * os  * (10 ** ((m - ms) * (1 + a))) * (math.e ** (-10 ** (m - ms)))
+import sys
+def schechter(m, ms, a, phi_s):
+  phi_s = 10 ** phi_s
+  ret = math.log(10) * phi_s * (10 ** ((m - ms) * (1 + a))) * (math.e ** (-10 ** (m - ms)))
+  return(math.log10(ret))
 
 
-def dub_schechter(m, ms, os1, os2, a1, a2, dm):
+def dub_schechter(m, ms, a1, phi_s1, a2, phi_s2):
+  phi_s1 = 10 ** phi_s1
+  phi_s2 = 10 ** phi_s2
+
   a = math.log(10) * math.e ** (-10 ** (m - ms)) * 10 ** (m - ms)
-  b = os1 * 10 ** ((m - ms) * a1) + os2 * 10 ** ((m - ms) * a2)
-  return dm * a * b
+  b = phi_s1 * 10 ** ((m - ms) * a1) + phi_s2 * 10 ** ((m - ms) * a2)
+  return(math.log10(a * b))
 
 if __name__ == "__main__":
+  """
   smf = data.smf()
   info = {'xlabel': r'$\mathregular{log(M/M_\odot)}$', 'ylabel': r'$\mathregular{log(\phi Mpc^3/dex)}$', 'legend': smf.z_range, 'xlim': [7.75, 12.25], 'ylim': [-5.75, -0.75]}
   params = {'marker': 'x'}
-
-  # Looks good!
-  '''
   graph.line(smf.smf, smf.mass, dict({'title': 'SMF'}, **info), params)
   graph.line(smf.sf_smf, smf.mass, dict({'title': "Star Forming SMF"}, **info), params)
   graph.line(smf.q_smf, smf.mass, dict({'title': "Quiescent SMF"}, **info), params)
-  plt.show()
-  '''
 
-  # Put on single graph?
-  info = {'xlabel': r'$\mathregular{log(M/M_\odot)}$', 'ylabel': r'$\mathregular{log(\phi Mpc^3/dex)}$', 'legend': ['SMF', 'SF_SMF', 'Q_SMF'], 'xlim': [7.75, 12.25], 'ylim': [-5.75, -0.75]}
-
-  f1 = graph.setup()
+  info = {'legend': ['SMF', 'SF_SMF', 'Q_SMF'], 'xlim': [7.75, 12.25], 'ylim': [-5.75, -0.75], 'xlabel': r'$\mathregular{log(M/M_\odot)}$', 'ylabel': r'$\mathregular{log(\phi Mpc^3/dex)}$'}
+  params = {'marker': 'x'}
+  gs = graph.setup8(info)
   for i in range(len(smf.smf)):
-    f1 = graph.line8([smf.smf[i], smf.sf_smf[i], smf.q_smf[i]], smf.mass, i, f1, dict({'title': smf.z_range[i]}, **info), params)
-  plt.show()
-
-  # S func is bad?
+    graph.line8([smf.smf[i], smf.sf_smf[i], smf.q_smf[i]], smf.mass, i, gs, dict({'title': smf.z_range[i]}, **info), params)
   """
-  res = []
-  x = []
-  for j in range(75, 120):
-    i = j / 10
-    x.append(i)
-    #res.append(dub_schechter(i, 10.78, -2.54, -4.29, -0.98, -1.90, 0.1))
-    res.append(schechter(i, 11.05, -2.96, -1.35, 0.1))
-    #res.append(schechter(i, 11.00, -2.93, -1.35))
 
-  print(res)
-  print(x)
-  graph.line([res], x)
+
+
+  ### Plot schechter
+  s = data.schechter()
+  info = {'xlabel': r'$\mathregular{log(M/M_\odot)}$', 'ylabel': r'$\mathregular{log(\phi Mpc^3/dex)}$', 'legend': s.z_range, 'xlim': [7.75, 12.25], 'ylim': [-5.75, -0.75]}
+  x = [i/10 for i in range(75, 125)]
+
+  for each in [['', s.double], ['Star forming', s.sf_double], ['Quiescent', s.q_double]]:
+    res = []
+    for i in each[1]:
+      res.append([])
+      for j in x:
+        res[-1].append(dub_schechter(j, *i))
+
+    graph.line(res, x, dict({'title': each[0] + ' Double'}, **info))
+
+
+  for each in [['', s.single], ['Star forming', s.sf_single], ['Quiescent', s.q_single]]:
+    res = []
+    for i in each[1]:
+      res.append([])
+      for j in x:
+        res[-1].append(schechter(j, *i))
+
+    graph.line(res, x, dict({'title': each[0] + ' Single'}, **info))
   plt.show()
-  """

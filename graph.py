@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 # data: a 2d array of data
 # x: the x values of the data points
@@ -27,34 +28,32 @@ def line(data, x, info={}, params={}):
   if 'legend' in info:
     plt.legend(info['legend'], loc = "lower left")
 
-def setup():
-  f1 = plt.figure()
-  ax = f1.add_subplot(111)
 
-  ax.axes.xaxis.set_ticklabels([])
-  ax.axes.yaxis.set_ticklabels([])
+# Sets up a 2r x 4c plot with no white space
+# Will hack a x/y label if they are provided in the params
+def setup8(params={}):
+  f1 = plt.figure(figsize = (2,4))
+  gs = gridspec.GridSpec(2, 4)
+  gs.update(wspace = 0, hspace = 0)
+  if 'xlabel' in params:
+    f1.text(0.5, 0.05, params['xlabel'], horizontalalignment='center', verticalalignment='center')
+  if 'ylabel' in params:
+    f1.text(0.09, 0.5, params['ylabel'], horizontalalignment='center', verticalalignment='center', rotation='vertical')
+  return(gs)
 
-  ax.set_xlabel('HO')
-  ax.set_ylabel('YO')
-  return(f1)
-
-# as above but plots 8 to a graph (must be called 8 times)
-def line8(data, x, num, f1, info={}, params={}):
-  af = f1.add_subplot(241 + num)
+# Mostly the same as line. Also takes the number of the plot (0-7) and the gs item created by setup8
+def line8(data, x, num, gs, info={}, params={}):
+  af = plt.subplot(gs[num])
 
   if 'xlim' in info:
     af.set_xlim(info['xlim'])
   if 'ylim' in info:
     af.set_ylim(info['ylim'])
   if 'title' in info:
-    #plt.title(info['title'])
     af.text(0.7, 0.8,info['title'],horizontalalignment='center', verticalalignment='center', transform = af.transAxes)
-
   if num < 4:
-    #af.axes.get_xaxis().set_ticks([])
     af.set_xticklabels([])
   if (num % 4):
-    #af.axes.get_yaxis().set_ticks([])
     af.set_yticklabels([])
 
   for y in data:
@@ -62,4 +61,3 @@ def line8(data, x, num, f1, info={}, params={}):
 
   if 'legend' in info:
     plt.legend(info['legend'], loc = "lower left")
-  return f1
