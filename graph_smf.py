@@ -3,21 +3,7 @@
 import data
 import graph
 import matplotlib.pyplot as plt
-import math
-import sys
-def schechter(m, ms, a, phi_s):
-  phi_s = 10 ** phi_s
-  ret = math.log(10) * phi_s * (10 ** ((m - ms) * (1 + a))) * (math.e ** (-10 ** (m - ms)))
-  return(math.log10(ret))
-
-
-def dub_schechter(m, ms, a1, phi_s1, a2, phi_s2):
-  phi_s1 = 10 ** phi_s1
-  phi_s2 = 10 ** phi_s2
-
-  a = math.log(10) * math.e ** (-10 ** (m - ms)) * 10 ** (m - ms)
-  b = phi_s1 * 10 ** ((m - ms) * a1) + phi_s2 * 10 ** ((m - ms) * a2)
-  return(math.log10(a * b))
+import helpers as h
 
 if __name__ == "__main__":
   """
@@ -47,7 +33,7 @@ if __name__ == "__main__":
     for i in each[1]:
       res.append([])
       for j in x:
-        res[-1].append(dub_schechter(j, *i))
+        res[-1].append(h.dub_schechter(j, *i))
 
     graph.line(res, x, dict({'title': each[0] + ' Double'}, **info))
 
@@ -57,7 +43,7 @@ if __name__ == "__main__":
     for i in each[1]:
       res.append([])
       for j in x:
-        res[-1].append(schechter(j, *i))
+        res[-1].append(h.schechter(j, *i))
 
     graph.line(res, x, dict({'title': each[0] + ' Single'}, **info))
   plt.show()
