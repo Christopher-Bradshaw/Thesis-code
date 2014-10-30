@@ -28,6 +28,12 @@ def line(data, x, info={}, params={}):
   if 'legend' in info:
     plt.legend(info['legend'], loc = "lower left")
 
+# Given two points, plots a line between them
+# Each of these must be a list: start = [start.x, start.y]
+def cut_line(start, end):
+  plt.plot([start[0], end[0]], [start[1], end[1]], '--')
+
+
 
 # Sets up a 2r x 4c plot with no white space
 # Will hack a x/y label if they are provided in the params

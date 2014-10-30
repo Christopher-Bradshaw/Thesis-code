@@ -7,7 +7,9 @@ Find the mass with that number density at all other Z
 graph the increase of mass as Z decreases
 """
 
-
+""" TODO
+paramaterization
+"""
 import helpers as h
 import data
 import graph
@@ -16,39 +18,32 @@ import matplotlib.pyplot as plt
 # Given a min value, a max value, a target finds the value closest to the target after some number of iterations
 # Target is a number density
 # Returns the mass at that number density
-def binary_search(target, z_params):
-  iters = 10
-  start = 6
-  stop = 12
+def binary_search(start, stop, iters, target, z_params):
   for i in range(iters):
     guess = h.dub_schechter((start+stop)/2, *z_params)
     if guess < target:
       stop = (start + stop) / 2
-    else:
+    elif guess > target:
       start = (start + stop) / 2
-  return(guess, (start + stop)/ 2)
-
-
+    else: # Unlikely...
+      return((start + stop) / 2)
+  return((start + stop)/ 2)
 
 if __name__ == "__main__":
-  # Paramtaters for double schechter
   d = data.schechter()
-  s = d.double
-  r = [i/100 for i in range(750, 1200)]
-
-
-  start = [8, 8.5, 9, 9.5, 10, 10.5, 11]
-  dens = []
-  masses = []
+  #start, masses = [8 + 0.1*i for i in range(31)], []
+  start, masses = [8 + 0.5*i for i in range(7)], []
 
   for start_mass in start:
     masses.append([start_mass])
-    dens.append([h.dub_schechter(start_mass, *s[0])])
+    # Find the number density of the start mass galaxies at the highest Z
+    target = h.dub_schechter(start_mass, *d.double[0])
 
-    for z_params in s[1:]:
-      den, mass = binary_search(dens[-1][-1], z_params)
-      dens[-1].append(den)
-      masses[-1].append(mass)
+    for z_params in d.double[1:]:
+      # Find the mass that at lower Z matches the target number density
+      masses[-1].append(binary_search(6, 12, 100, target, z_params))
 
-  graph.line(masses, d.z_avg)
+  info = {'xlabel': r'Z', 'ylabel': r'Mass', 'legend': d.z_range, 'title': "Mass at constant number density over time", 'xlim': [0.35, 2.75]}
+  graph.line(masses, d.z_avg, info)
+  graph.cut_line([2.75, 9.5],[0.35, 8])
   plt.show()
