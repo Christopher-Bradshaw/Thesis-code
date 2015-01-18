@@ -1,12 +1,17 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
-import data
-import graph
+"""
+This takes the data.smf (raw zfourge data) and data.schechter (that data fit to schechter funcs)
+and plots graphs with it
+"""
+
+import helpers.data as data
+import helpers.graph as graph
 import matplotlib.pyplot as plt
-import helpers as h
+import helpers.schechter as h
+import sys
 
 if __name__ == "__main__":
-  """
   smf = data.smf()
   info = {'xlabel': r'$\mathregular{log(M/M_\odot)}$', 'ylabel': r'$\mathregular{log(\phi Mpc^3/dex)}$', 'legend': smf.z_range, 'xlim': [7.75, 12.25], 'ylim': [-5.75, -0.75]}
   params = {'marker': 'x'}
@@ -19,7 +24,6 @@ if __name__ == "__main__":
   gs = graph.setup8(info)
   for i in range(len(smf.smf)):
     graph.line8([smf.smf[i], smf.sf_smf[i], smf.q_smf[i]], smf.mass, i, gs, dict({'title': smf.z_range[i]}, **info), params)
-  """
 
 
 
@@ -33,17 +37,16 @@ if __name__ == "__main__":
     for i in each[1]:
       res.append([])
       for j in x:
-        res[-1].append(h.dub_schechter(j, *i))
+        res[-1].append(h.param_dub_schechter(j, i[-1]))
 
     graph.line(res, x, dict({'title': each[0] + ' Double'}, **info))
-
 
   for each in [['', s.single], ['Star forming', s.sf_single], ['Quiescent', s.q_single]]:
     res = []
     for i in each[1]:
       res.append([])
       for j in x:
-        res[-1].append(h.schechter(j, *i))
+        res[-1].append(h.schechter(j, *i[:3]))
 
     graph.line(res, x, dict({'title': each[0] + ' Single'}, **info))
   plt.show()
