@@ -2,14 +2,16 @@
 
 import math
 import sys
+
+# Input is exactly the same as data.schechter.single (except for no z) and required m
 def schechter(m, ms, a, phi_s):
   phi_s = 10 ** phi_s
   ret = math.log(10) * phi_s * (10 ** ((m - ms) * (1 + a))) * (math.e ** (-10 ** (m - ms)))
   return(math.log10(ret))
 
 
-# z is not used. Included so that the same data for the param_dub_schechter func can be used
-def dub_schechter(m, ms, a1, phi_s1, a2, phi_s2, z):
+# Input is exactly the same as data.schechter.double (except for no z) and required m
+def dub_schechter(m, ms, a1, phi_s1, a2, phi_s2):
   phi_s1 = 10 ** phi_s1
   phi_s2 = 10 ** phi_s2
 
