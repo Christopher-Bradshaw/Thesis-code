@@ -18,8 +18,8 @@ if __name__ == "__main__":
   unc_totals = []
   names = []
   totals = []
-  res_locations = [6 + 5*i for i in range(37)]
-  unc_locations =  [[5*i-2, 5*i] for i in range(1,38)]
+  res_locations = [6 + 5*i for i in range(50)]
+  unc_locations =  [[5*i-2, 5*i] for i in range(1,52)]
   for line in f:
     x = [i for i in line[18:].split(' ') if i != '']
     totals.append(x[1])

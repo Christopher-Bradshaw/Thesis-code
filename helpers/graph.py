@@ -4,9 +4,9 @@ import matplotlib.gridspec as gridspec
 import sys
 
 def settings(info, af):
-  if 'xlog' in info:
+  if 'xlog' in info and info['xlog'] == True:
     af.set_xscale('log')
-  if 'ylog' in info:
+  if 'ylog' in info and info['ylog'] == True:
     af.set_yscale('log')
   if 'xlim' in info:
     af.set_xlim(info['xlim'])
@@ -18,13 +18,14 @@ def settings(info, af):
     plt.xlabel(info['xlabel'])
   if 'ylabel' in info:
     plt.ylabel(info['ylabel'])
-  if 'invert_xaxis' in info and info['invert_xaxis']:
-    af1.invert_xaxis()
+  if 'invert_xaxis' in info and info['invert_xaxis'] == True:
+    af.invert_xaxis()
   return(af)
 
-def actual_plot(x, data, params):
+def actual_plot(x, data, params, af):
 
   for i, y in enumerate(data):
+    color = next(af._get_lines.color_cycle)
 
     marker = params['marker'] if 'marker' in params else None
     if type(marker) == list:
@@ -34,7 +35,15 @@ def actual_plot(x, data, params):
     if type(linestyle) == list:
       linestyle = linestyle[i % len(linestyle)]
 
-    plt.plot(x, y, marker=marker, linestyle=linestyle)
+    yerr = params['yerr'] if 'yerr' in params else None
+    if type(yerr) == list and i in yerr: # Yes error bars!
+      errors = [[i[1] for i in params['yerr_vals']], [i[0] for i in params['yerr_vals']]]
+
+      af.errorbar(x, y, yerr=errors, fmt="none", ecolor=color)
+
+    plt.plot(x, y, marker=marker, linestyle=linestyle, color=color)
+
+  return(af)
 
 # data: a 2d array of data
 # x: the x values of the data points
@@ -119,7 +128,7 @@ def line6(data, x, num, gs, info={}, params={}):
   if (num % 3):
     af.set_yticklabels([])
 
-  actual_plot(x, data, params)
+  af = actual_plot(x, data, params, af)
 
   if 'legend' in info:
     plt.legend(info['legend'], loc = "lower left")
