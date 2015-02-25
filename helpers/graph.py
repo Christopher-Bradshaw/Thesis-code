@@ -22,9 +22,10 @@ def settings(info, af):
     af.invert_xaxis()
   return(af)
 
-def actual_plot(x, data, params, af):
+def actual_plot(x1, data, params, af):
 
   for i, y in enumerate(data):
+    x = x1 if type(x1[0]) != list else x1[i]
     color = next(af._get_lines.color_cycle)
 
     marker = params['marker'] if 'marker' in params else None
@@ -38,8 +39,12 @@ def actual_plot(x, data, params, af):
     yerr = params['yerr'] if 'yerr' in params else None
     if type(yerr) == list and i in yerr: # Yes error bars!
       errors = [[i[1] for i in params['yerr_vals']], [i[0] for i in params['yerr_vals']]]
-
       af.errorbar(x, y, yerr=errors, fmt="none", ecolor=color)
+
+    xerr = params['xerr'] if 'xerr' in params else None
+    if type(xerr) == list and i in xerr: # Yes error bars!
+      errors = [[i[1] for i in params['xerr_vals']], [i[0] for i in params['xerr_vals']]]
+      af.errorbar(x, y, xerr=errors, fmt="none", ecolor=color)
 
     plt.plot(x, y, marker=marker, linestyle=linestyle, color=color)
 

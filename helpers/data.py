@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 
-import helpers.z_to_t as z_to_t
+from os import path
+import sys
+sys.path.append(path.dirname(path.abspath(__file__)))
+import z_to_t
 import math
 
 # Data on the stellar mass function, taken from the Z forge paper
@@ -112,18 +115,112 @@ class schechter:
   ]
 
 
+# Some other growth data. Taken from http://iopscience.iop.org/0004-637X/795/2/104/pdf/apj_795_2_104.pdf
+class sfr:
+  # order
+  # M_star (Psi +- Lir +- Luv +-)~ (Psi +- Lir +- Luv +-)_ Beta z_start z_end
+  data = [[
+    [8.4, -0.6, 0.5, 7.69, 0.63, 9.01, 0.01, None, None, None, None, 9.04, 0.01, -1.76, 0.5, 1.0],
+    [8.7, -0.38, 0.11, 8.83, 0.09, 9.15, 0.01, -0.37, 0.11, 8.75, 0.11, 9.18, 0.01, -1.74, 0.5, 1.0],
+    [8.9, -0.2, 0.05, 9.09, 0.05, 9.32, 0.01, -0.19, 0.05, 9.05, 0.05, 9.34, 0.01, -1.73, 0.5, 1.0],
+    [9.1, 0.05, 0.03, 9.59, 0.03, 9.47, 0.01, 0.09, 0.03, 9.64, 0.02, 9.49, 0.01, -1.67, 0.5, 1.0],
+    [9.3, 0.23, 0.02, 9.85, 0.02, 9.59, 0.01, 0.27, 0.02, 9.92, 0.01, 9.61, 0.01, -1.49, 0.5, 1.0],
+    [9.5, 0.45, 0.02, 10.17, 0.01, 9.7, 0.01, 0.53, 0.02, 10.28, 0.01, 9.73, 0.01, -1.32, 0.5, 1.0],
+    [9.7, 0.65, 0.02, 10.45, 0.02, 9.76, 0.01, 0.75, 0.02, 10.57, 0.01, 9.81, 0.01, -1.08, 0.5, 1.0],
+    [9.9, 0.78, 0.03, 10.63, 0.02, 9.75, 0.02, 0.88, 0.03, 10.75, 0.01, 9.81, 0.02, -0.84, 0.5, 1.0],
+    [10.1, 0.99, 0.07, 10.89, 0.02, 9.72, 0.07, 1.11, 0.07, 11.01, 0.01, 9.82, 0.05, -0.55, 0.5, 1.0],
+    [10.3, 1.06, 0.05, 10.96, 0.02, 9.75, 0.02, 1.18, 0.05, 11.09, 0.01, 9.83, 0.01, -0.42, 0.5, 1.0],
+    [10.5, 1.09, 0.07, 11.01, 0.02, 9.65, 0.03, 1.21, 0.07, 11.13, 0.01, 9.75, 0.03, -0.27, 0.5, 1.0],
+    [10.7, 1.22, 0.07, 11.13, 0.02, 9.86, 0.01, 1.36, 0.07, 11.28, 0.01, 9.91, 0.01, -0.37, 0.5, 1.0],
+    [10.9, 1.21, 0.08, 11.13, 0.02, 9.79, 0.02, 1.34, 0.08, 11.27, 0.01, 9.87, 0.02, -0.27, 0.5, 1.0],
+    [11.1, 1.27, 0.1, 11.19, 0.03, 9.92, 0.03, 1.4, 0.1, 11.32, 0.02, 9.97, 0.02, -0.42, 0.5, 1.0]
+  ],
+  [
+    [8.8, -0.03, 0.13, 9.2, 0.15, 9.51, 0.01, None, None, None, None, 9.55, 0.01, -1.79, 1.0, 1.5],
+    [9.1, 0.17, 0.08, 9.59, 0.08, 9.64, 0.01, 0.19, 0.08, 9.58, 0.08, 9.67, 0.01, -1.76, 1.0, 1.5],
+    [9.3, 0.38, 0.05, 9.96, 0.04, 9.77, 0.01, 0.37, 0.05, 9.87, 0.05, 9.8, 0.01, -1.7, 1.0, 1.5],
+    [9.5, 0.64, 0.02, 10.36, 0.02, 9.89, 0.01, 0.68, 0.02, 10.41, 0.02, 9.91, 0.01, -1.55, 1.0, 1.5],
+    [9.7, 0.81, 0.02, 10.6, 0.02, 9.95, 0.01, 0.85, 0.02, 10.64, 0.01, 9.98, 0.01, -1.38, 1.0, 1.5],
+    [9.9, 1.02, 0.03, 10.88, 0.02, 9.96, 0.03, 1.12, 0.03, 10.99, 0.01, 10.02, 0.02, -1.17, 1.0, 1.5],
+    [10.1, 1.18, 0.04, 11.06, 0.02, 10.02, 0.03, 1.29, 0.04, 11.19, 0.01, 10.06, 0.03, -0.97, 1.0, 1.5],
+    [10.3, 1.35, 0.04, 11.27, 0.02, 9.9, 0.02, 1.44, 0.04, 11.37, 0.01, 10.0, 0.02, -0.71, 1.0, 1.5],
+    [10.5, 1.47, 0.05, 11.4, 0.02, 9.92, 0.03, 1.61, 0.05, 11.54, 0.01, 9.99, 0.02, -0.54, 1.0, 1.5],
+    [10.7, 1.58, 0.05, 11.52, 0.02, 9.97, 0.01, 1.7, 0.05, 11.64, 0.01, 10.01, 0.01, -0.27, 1.0, 1.5],
+    [10.9, 1.69, 0.08, 11.63, 0.03, 10.01, 0.01, 1.82, 0.08, 11.76, 0.02, 10.06, 0.01, -0.2, 1.0, 1.5],
+    [11.1, 1.74, 0.13, 11.68, 0.05, 10.1, 0.03, 1.8, 0.13, 11.74, 0.04, 10.16, 0.02, -0.13, 1.0, 1.5],
+    [11.3, 1.81, 0.11, 11.76, 0.06, 10.0, 0.04, 1.93, 0.11, 11.87, 0.05, 10.17, 0.03, -0.21, 1.0, 1.5]
+  ],
+  [
+    [9.2, 0.48, 0.07, 10.0, 0.06, 9.91, 0.01, 0.47, 0.07, 9.89, 0.08, 9.94, 0.01, -1.71, 1.5, 2.0],
+    [9.4, 0.7, 0.03, 10.35, 0.02, 10.02, 0.01, 0.77, 0.03, 10.46, 0.02, 10.06, 0.01, -1.59, 1.5, 2.0],
+    [9.7, 0.94, 0.02, 10.7, 0.02, 10.13, 0.01, 0.97, 0.02, 10.73, 0.02, 10.16, 0.01, -1.47, 1.5, 2.0],
+    [9.9, 1.15, 0.03, 11.0, 0.02, 10.15, 0.02, 1.22, 0.03, 11.06, 0.02, 10.21, 0.01, -1.25, 1.5, 2.0],
+    [10.1, 1.38, 0.03, 11.29, 0.02, 10.11, 0.02, 1.45, 0.03, 11.35, 0.01, 10.2, 0.02, -0.99, 1.5, 2.0],
+    [10.3, 1.54, 0.04, 11.47, 0.02, 10.08, 0.02, 1.62, 0.04, 11.55, 0.02, 10.19, 0.02, -0.78, 1.5, 2.0],
+    [10.5, 1.7, 0.1, 11.65, 0.02, 9.99, 0.11, 1.81, 0.1, 11.76, 0.02, 10.1, 0.09, -0.61, 1.5, 2.0],
+    [10.7, 1.83, 0.07, 11.78, 0.02, 10.01, 0.03, 1.91, 0.07, 11.85, 0.02, 10.09, 0.02, -0.33, 1.5, 2.0],
+    [10.9, 1.9, 0.11, 11.84, 0.03, 10.01, 0.08, 1.99, 0.11, 11.94, 0.02, 10.08, 0.07, -0.24, 1.5, 2.0],
+    [11.1, 2.02, 0.1, 11.97, 0.04, 10.06, 0.03, 2.13, 0.1, 12.08, 0.03, 10.09, 0.03, -0.19, 1.5, 2.0],
+    [11.3, 2.19, 0.09, 12.14, 0.04, 10.23, 0.03, 2.25, 0.09, 12.2, 0.04, 10.37, 0.02, -0.14, 1.5, 2.0],
+    [11.5, 2.25, 0.18, 12.2, 0.1, 10.44, 0.04, 2.3, 0.18, 12.25, 0.09, 10.4, 0.04, 0.06, 1.5, 2.0]
+  ],
+  [
+    [9.3, 0.82, 0.06, 10.44, 0.05, 10.18, 0.01, 0.79, 0.06, 10.35, 0.06, 10.2, 0.01, -1.58, 2.0, 2.5],
+    [9.6, 1.05, 0.03, 10.77, 0.03, 10.31, 0.01, 1.05, 0.03, 10.76, 0.03, 10.33, 0.01, -1.46, 2.0, 2.5],
+    [9.8, 1.26, 0.03, 11.04, 0.02, 10.4, 0.01, 1.3, 0.03, 11.1, 0.02, 10.41, 0.01, -1.29, 2.0, 2.5],
+    [10.0, 1.46, 0.03, 11.33, 0.01, 10.38, 0.02, 1.51, 0.03, 11.38, 0.01, 10.44, 0.02, -1.02, 2.0, 2.5],
+    [10.3, 1.64, 0.03, 11.55, 0.02, 10.3, 0.03, 1.7, 0.03, 11.61, 0.01, 10.4, 0.02, -0.84, 2.0, 2.5],
+    [10.5, 1.86, 0.05, 11.79, 0.02, 10.31, 0.04, 1.95, 0.05, 11.89, 0.02, 10.34, 0.04, -0.62, 2.0, 2.5],
+    [10.7, 1.95, 0.08, 11.89, 0.03, 10.17, 0.06, 2.06, 0.08, 12.0, 0.02, 10.25, 0.05, -0.36, 2.0, 2.5],
+    [10.9, 2.07, 0.06, 12.02, 0.03, 10.14, 0.02, 2.13, 0.06, 12.08, 0.03, 10.23, 0.02, -0.28, 2.0, 2.5],
+    [11.1, 2.2, 0.1, 12.15, 0.04, 10.12, 0.07, 2.32, 0.1, 12.28, 0.03, 10.19, 0.06, -0.07, 2.0, 2.5],
+    [11.3, 2.32, 0.12, 12.27, 0.06, 10.2, 0.05, 2.42, 0.12, 12.38, 0.05, 10.23, 0.04, 0.16, 2.0, 2.5],
+    [11.5, 2.39, 0.17, 12.35, 0.1, 10.12, 0.11, 2.6, 0.17, 12.56, 0.07, 10.24, 0.08, -0.25, 2.0, 2.5]
+  ]]
+
+
 # Data on the Star Formation History, taken from the LG dwarfs paper
 class sfh:
   # Convert times from legend to Z. This is the same as the z_times
   def abs_times(self):
     return([round(z_to_t.z_from_t(10 ** i / 10 ** 9), 5) for i in self.legend])
 
-  # Returns log10(mass) for all masses over time. Similar for uncertainties
+  # Returns true mass (NOTE, not log10) for all masses over time. Similar for uncertainties
   def abs_mass(self):
+    c = 0.64 # constant factor taking into account death
+    frac_unc = True # just set error to be 50% of mass
+    # mass over time, their uncertainties
     abs_masses, abs_masses_unc = [], []
-    for i in range(len(self.total_mass)):
+    for i in range(len(self.mass)): # For each galaxy
+      abs_masses.append([])
+      abs_masses_unc.append([])
+      for j in range(len(self.mass[i])): # At each time
+        # units of 10**6 solar masses
+        current_mass = self.mass[i][j] * self.total_mass[i]
+        if frac_unc:
+          pos_error, neg_error = current_mass/2, current_mass/2
+        else:
+          pos_error = current_mass * math.sqrt(sum([(self.total_mass_unc[i][0]/self.total_mass[i])**2, (self.mass_unc[i][j][0]/self.mass[i][j])**2]))
+          neg_error = current_mass * math.sqrt(sum([(self.total_mass_unc[i][1]/self.total_mass[i])**2, (self.mass_unc[i][j][1]/self.mass[i][j])**2]))
+          # Limit neg error to the mass
+          neg_error = neg_error if neg_error < current_mass else current_mass
+
+        # Convert to true mass
+        [current_mass, pos_error, neg_error] = [(c * k * 10**6) for k in [current_mass, pos_error, neg_error]]
+
+        abs_masses[-1].append(current_mass)
+        abs_masses_unc[-1].append([pos_error, neg_error])
+
+      """
       abs_masses.append([math.log10(j * self.total_mass[i] * 10**6) for j in self.mass[i]])
-      abs_masses_unc.append([ [math.log10(j[0] * self.total_mass[i] * 10**6) if j[0] != 0 else float("-inf"), math.log10(j[1] * self.total_mass[i] * 10**6) if j[1] != 0 else float("-inf")] for j in self.mass_unc[i]])
+      # These uncertainties are wrong as they do not take into account the uncertainty on the total mass
+      abs_masses_unc.append([
+        [
+          math.log10(j[0] * self.total_mass[i] * 10**6) if j[0] != 0 else float("-inf"),
+          math.log10(j[1] * self.total_mass[i] * 10**6) if j[1] != 0 else float("-inf")
+        ] for j in self.mass_unc[i]
+      ])
+      """
     return(abs_masses, abs_masses_unc)
 
 
@@ -135,6 +232,18 @@ class sfh:
   # The following all go together: Galaxy names[j] is of type g_type[j] with mass total_mass[j] and mass over time of mass[j]
   names = ['Andromeda I', 'Andromeda II', 'Andromeda III', 'Andromeda V', 'Andromeda VI', 'Andromeda VII', 'Andromeda XI', 'Andromeda XII', 'Andromeda XIII', 'Carina', 'Cetus', 'Canes Venetici I', 'Canes Venetici II', 'DDO 210', 'Draco', 'Fornax', 'Hercules', 'IC 10', 'IC 1613', 'IC 1613', 'Leo A', 'Leo A', 'Leo I', 'Leo II', 'Leo IV', 'Leo T', 'LGS 3', 'M32', 'NGC 147', 'NGC 185', 'NGC 185', 'NGC 185', 'NGC 205', 'NGC 205', 'NGC 205', 'NGC 6822', 'NGC 6822', 'NGC 6822', 'Pegasus', 'Phoenix', 'Phoenix', 'Sag DIG', 'Sagittarius', 'Sagittarius', 'Sculptor', 'Sculptor', 'Sex A', 'Sex A', 'Sex B', 'Tucana', 'Ursa Minor', 'WLM', 'WLM']
   g_type = ['dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dTrans', 'dSph', 'dSph', 'dSph', 'dIrr', 'dIrr', 'dIrr', 'dIrr', 'dIrr', 'dSph', 'dSph', 'dSph', 'dTrans', 'dTrans', 'dE', 'dE', 'dE', 'dE', 'dE', 'dE', 'dE', 'dE', 'dIrr', 'dIrr', 'dIrr', 'dTrans', 'dTrans', 'dTrans', 'dIrr', 'dSph', 'dSph', 'dSph', 'dSph', 'dIrr', 'dIrr', 'dIrr', 'dSph', 'dSph', 'dIrr', 'dIrr']
+  # (A)ndromeda, our (G)alaxy, (L)ocal group, (N)earby
+  g_loc = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'G', 'L', 'G', 'G', 'L', 'G', 'G', 'G', 'A', 'L', 'L', 'L', 'L', 'GL', 'G', 'G', 'GL', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'GL', 'GL', 'GL', 'AL','GL', 'GL', 'L', 'G', 'G', 'G', 'G', 'N', 'N', 'N', 'L', 'G', 'L', 'L']
+  def get_loc(self):
+    return(['L' if i == 'N' else i for i in [i[0] if i == 'AL' or i == 'GL' else i for i in self.g_loc]])
+
+  g_exp = {'A': 0.3, 'G': 0.3, 'L':0.4} # Expected percentages
+  def g_actual(self):
+    totals = {'A': self.g_loc.count('A') + self.g_loc.count('AL'), 'G': self.g_loc.count('G') + self.g_loc.count('GL'), 'L': self.g_loc.count('L') + self.g_loc.count('N')}
+    perc = {}
+    for key in totals:
+      perc[key] = totals[key] / sum(totals.values())
+    return(perc)
   # Total mass (in units of 10^6 solar masses)
   total_mass = [2.79, 1.94, 1.54, 1.42, 3.62, 12.8, 0.17, 0.06, 0.16, 0.03, 1.81, 0.02, 0.01, 4.18, 0.03, 0.27, 0.008, 83.47, 4.57, 1.05, 1.68, 0.51, 0.98, 0.3, 0.006, 0.1, 0.63, 27.65, 12.78, 24.27, 25.47, 11.85, 35.02, 35.14, 13.97, 4.86, 9.21, 3.46, 7.68, 1.28, 0.61, 3.39, 0.02, 0.01, 0.006, 0.09, 17.54, 4.88, 41.81, 3.22, 0.02, 1.96, 6.68]
   # total_mass[i] (+ total_mass_unc[i][0],- total_mass_unc[i][1])

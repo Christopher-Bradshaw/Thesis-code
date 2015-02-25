@@ -26,7 +26,13 @@ I am comparing how the results from comparing different methods of galaxy growth
   * Phi_1 and phi_2 vary with z, as does M<sup>*</sup> and M<sub>dot</sub>
 * Using this paramaterization with the Zfourge data, we have a nice set of data for far away things
 
-##
+## Local Galaxy Stuff
+* This data is shows the growth of local galaxies over time.
+* Comes in the form of final mass (+/- error) and percentage of that mass at various times (+/- error)
+
+#### Errors
+* At time `t` for galaxy `x`, Mass = x<sub>m</sub> +/- x<sub>e</sub> 
+* For a number of gala
 
 
 # Details
