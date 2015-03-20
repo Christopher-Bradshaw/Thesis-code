@@ -19,7 +19,7 @@ def sf_m_at_z(bin_maxes, index, t_step):
   g_loc = sfh.get_loc()
 
   z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh.z_times)
-  gal_mass = [[galaxy[index], galaxy[index + t_step]] for galaxy in masses]
+  gal_mass =     [[galaxy[index], galaxy[index + t_step]] for galaxy in masses]
   gal_mass_unc = [[galaxy[index], galaxy[index + t_step]] for galaxy in masses_unc]
 
   # Bin each gal, throw error if not binned or smaller than first bin
@@ -27,27 +27,21 @@ def sf_m_at_z(bin_maxes, index, t_step):
   for j, gal in enumerate(gal_mass): # for each galaxy
     for i in range(len(bin_maxes)): # scan through bins. Bin and break when appropriate
       if math.log10(gal[0]) < bin_maxes[i]:
-        if i == 0:
-          print("Lower min bin!")
-          sys.exit()
         orig_bins[i].append([gal, g_loc[j]])
         orig_bins_unc[i].append([gal_mass_unc[j], g_loc[j]])
         break
     else:
-      print("Increase max bin!")
-      sys.exit()
+      raise Exception("Check max bin sizing")
+  if orig_bins[0]:
+    raise Exception("Check min bin sizing")
+  orig_bins, orig_bins_unc = orig_bins[1:], orig_bins_unc[1:]
 
   bins, bins_unc, bins_center, bins_center_unc = [[] for i in range(4)]
-  # Ignore first bin - should always be empty
-  for i in range(1, len(orig_bins)):
-    g_actual = wh.g_actual_bins(orig_bins)
-    # Make each bin the rate of change of mass in that bin
+  for i in range(len(orig_bins)):
+    g_actual = wh.g_actual_bins(orig_bins[i])
     bins.append(wh.average_growth_rate(sfh.g_exp, g_actual, orig_bins[i], t0, t1))
-    # Make each bins_unc the uncertainty in that bin (assuming we are summing the things)
     bins_unc.append(wh.bin_uncertainty(sfh.g_exp, g_actual, orig_bins_unc[i], t0, t1))
-    # Calc the avg start mass for each bin **LOG10**
     bins_center.append(wh.average_bin_start(sfh.g_exp, g_actual, orig_bins[i]))
-    # Calc the uncertainty on this avg start mass
     bins_center_unc.append(wh.uncertainty_bin_start(sfh.g_exp, g_actual, orig_bins_unc[i], bins_center[-1]))
 
   return(bins, bins_unc, bins_center, bins_center_unc)
@@ -64,6 +58,7 @@ def schechter_sf_m_at_z(bins_center, index, t_step):
     o_bins.append( ((10 ** m3) - (10 ** m)) / (t0 - t1))
 
   print(o_bins)
+  return(o_bins)
   # Need to do this differently.
   # Determine the number density of m at z0 (1)
   # Generate an SMF at z1, correct for mergers (2)
@@ -109,26 +104,11 @@ def schechter_sf_m_at_z(bins_center, index, t_step):
   ###
   return(bins)
 
-# This is the third option - sfr data
-# The way we are doing this is fine for a sanity check but not really that nice.
-# There are lots of issues with choosing values.
-# z0 > z1
+# This is the third option - sfr data. NB: z0 > z1
 def sfr_data(ext_bins_center, z0, z1):
-  # This is the raw data
-  """
-  sfr = data.sfr().data[0]
-  sfr_x = [i[0] for i in sfr]
-  sfr_y = [0.64e9*10**i[1] for i in sfr] # M sun per year
-  """
-
   a_low, a_high, b = h_whit.weight_parameters(z0, z1)
-
-
   m_star = 10.2
-  bins = []
-
-  for mass in ext_bins_center:
-    bins.append(10**(a_low * (mass - 10.2) + b) * 0.64e9)
+  bins = [10**(a_low * (mass - 10.2) + b) * 0.64e9 for mass in ext_bins_center]
   return(bins)
 
 def plot_sf_m_at_z():

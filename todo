@@ -5,10 +5,14 @@ ZFOURGE
   write tests for moved binary search/growth over time (5)
   write tests for merger correction (4)
 
-  Have broken it... (2)
-
 SFH
-  Code is butt ugly. Clean up and write tests (1)
+  Integration test
+    Have broken it... (2)
+
+SFR
+  Integration test
+  Call only when data is of correct age (0.5 - 3.0)
+    Code is butt ugly. Clean up and write tests (1) 
 
 
 
@@ -25,3 +29,8 @@ SFH
 ERRORS FOUND
   SFH data over 3 different regions (correctly weight over 2, don't over 3
   Used overall actual weights, rather than weights in each bin
+
+
+
+QUESTIONS
+  Ensure that SFH data should be multiplied by 0.64

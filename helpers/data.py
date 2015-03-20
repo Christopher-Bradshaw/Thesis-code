@@ -118,7 +118,8 @@ class schechter:
 # Some other growth data. Taken from http://iopscience.iop.org/0004-637X/795/2/104/pdf/apj_795_2_104.pdf
 class sfr:
   # order
-  # M_star (Psi +- Lir +- Luv +-)~ (Psi +- Lir +- Luv +-)_ Beta z_start z_end
+  # [3.0 - 2.0, 2.0 - 1.5, 1.5 - 1.0, 1.0 - 0.5]
+  # M_star (Psi e Lir e Luv e)~ (Psi e Lir e Luv e)_ Beta z_start z_end ------ PSI is growth rate in log 10^9 suns per gyr
   data = [[
     [8.4, -0.6, 0.5, 7.69, 0.63, 9.01, 0.01, None, None, None, None, 9.04, 0.01, -1.76, 0.5, 1.0],
     [8.7, -0.38, 0.11, 8.83, 0.09, 9.15, 0.01, -0.37, 0.11, 8.75, 0.11, 9.18, 0.01, -1.74, 0.5, 1.0],
