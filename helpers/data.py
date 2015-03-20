@@ -181,14 +181,11 @@ class sfr:
 
 # Data on the Star Formation History, taken from the LG dwarfs paper
 class sfh:
-  # Convert times from legend to Z. This is the same as the z_times
-  def abs_times(self):
-    return([round(z_to_t.z_from_t(10 ** i / 10 ** 9), 5) for i in self.legend])
-
   # Returns true mass (NOTE, not log10) for all masses over time. Similar for uncertainties
   # if frac_unc, use simplified 50% error mechanism
   def abs_mass(self, frac_unc = True):
     c = 0.64 # constant factor taking into account death
+
     # mass over time, their uncertainties
     abs_masses, abs_masses_unc = [], []
     for i in range(len(self.mass)): # For each galaxy
@@ -215,6 +212,7 @@ class sfh:
 
   # X values are calculated: log(t) = 10.1 so t = 12.5 billion and so on. X val is 10^x for each x in legend
   legend = [10.1, 10.05, 10.0, 9.95, 9.9, 9.85, 9.8, 9.75, 9.7, 9.65, 9.6, 9.55, 9.5, 9.45, 9.4, 9.35, 9.3, 9.25, 9.2, 9.15, 9.1, 9.05, 9.0, 8.95, 8.9, 8.85, 8.8, 8.75, 8.7, 8.6, 8.5, 8.4, 8.3, 8.2, 8.1, 8.0, 7.9, 7.8, 7.7, 7.6, 7.5, 7.4, 7.3, 7.2, 7.1, 7.0, 6.9, 6.8, 6.7, 6.6]
+
   # The Z values for each of these times, calculated using the helper z_to_t
   z_times = [5.19401, 2.63651, 1.7717, 1.31712, 1.0316, 0.83395, 0.68852, 0.57699, 0.48891, 0.41779, 0.35939, 0.31081, 0.26997, 0.23533, 0.20575, 0.18034, 0.15841, 0.1394, 0.12287, 0.10844, 0.09582, 0.08475, 0.07503, 0.06648, 0.05894, 0.05229, 0.04641, 0.04121, 0.03661, 0.02892, 0.02288, 0.01811, 0.01435, 0.01137, 0.00902, 0.00715, 0.00568, 0.00451, 0.00358, 0.00284, 0.00225, 0.00179, 0.00142, 0.00113, 0.0009, 0.00071, 0.00057, 0.00045, 0.00036, 0.00028]
 
@@ -229,11 +227,10 @@ class sfh:
 
   g_exp = {'A': 33/100, 'G': 27/100, 'L': 40/100} # Expected percentages
   def g_actual(self):
-    totals = {'A': sum([self.g_loc.count(i) for i in ['A', 'AL']]), 'G': sum([self.g_loc.count(i) for i in ['G', 'GL']]), 'L': sum([self.g_loc.count(i) for i in ['L', 'N']])}
-    perc = {}
-    for key in totals:
-      perc[key] = totals[key] / sum(totals.values())
-    return(perc)
+    totals = {'A': self.get_loc().count('A'), 'G': self.get_loc().count('G'), 'L': self.get_loc().count('L')}
+    percs = {k: v/sum(totals.values()) for k, v in totals.items()}
+    return(percs)
+
   # Total mass (in units of 10^6 solar masses)
   total_mass = [2.79, 1.94, 1.54, 1.42, 3.62, 12.8, 0.17, 0.06, 0.16, 0.03, 1.81, 0.02, 0.01, 4.18, 0.03, 0.27, 0.008, 83.47, 4.57, 1.05, 1.68, 0.51, 0.98, 0.3, 0.006, 0.1, 0.63, 27.65, 12.78, 24.27, 25.47, 11.85, 35.02, 35.14, 13.97, 4.86, 9.21, 3.46, 7.68, 1.28, 0.61, 3.39, 0.02, 0.01, 0.006, 0.09, 17.54, 4.88, 41.81, 3.22, 0.02, 1.96, 6.68]
   # total_mass[i] (+ total_mass_unc[i][0],- total_mass_unc[i][1])

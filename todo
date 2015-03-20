@@ -1,7 +1,11 @@
-Plot parameterised double schechter funciton in growth_zfourge
+ZFOURGE
+  Check/implement merger correction (3)
 
+  write tests for schechter func (6)
+  write tests for moved binary search/growth over time (5)
+  write tests for merger correction (4)
 
-Add error on the x axis from mass uncertainty
-Add error from total mass uncertainty
-star formation seq (star_forming_main_seq.pdf in reading)
-1 page thing
+  Have broken it... (2)
+
+SFH
+  Code is butt ugly. Clean up and write tests (1)
