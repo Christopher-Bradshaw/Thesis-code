@@ -27,7 +27,3 @@ class Test_helpers(unittest.TestCase):
 
     val, vals = 1, [0.3, 0.9, 0.7, 1.1]
     self.assertEqual(h.find_nearest(vals, val), 1)
-
-
-if __name__ == "__main__":
-  unittest.main(verbosity=3)

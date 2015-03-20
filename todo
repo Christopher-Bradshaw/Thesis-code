@@ -9,3 +9,19 @@ ZFOURGE
 
 SFH
   Code is butt ugly. Clean up and write tests (1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+ERRORS FOUND
+  SFH data over 3 different regions (correctly weight over 2, don't over 3
+  Used overall actual weights, rather than weights in each bin

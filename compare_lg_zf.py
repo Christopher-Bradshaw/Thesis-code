@@ -6,7 +6,7 @@ import helpers.data as data
 import helpers.graph as graph
 import helpers.helpers as h
 import helpers.weisz as wh
-import helpers.whitaker as h
+import helpers.whitaker as h_whit
 import helpers.schechter as hs
 import matplotlib.pyplot as plt
 import numpy as np
@@ -120,6 +120,8 @@ def sfr_data(ext_bins_center, z0, z1):
   sfr_x = [i[0] for i in sfr]
   sfr_y = [0.64e9*10**i[1] for i in sfr] # M sun per year
   """
+
+  a_low, a_high, b = h_whit.weight_parameters(z0, z1)
 
 
   m_star = 10.2
