@@ -1,136 +1,16 @@
 #!/usr/bin/env python3
 
 import sys
+import copy
 import helpers.data as data
 import helpers.graph as graph
 import helpers.helpers as h
+wh = h.weisz_helpers(True)
 import helpers.schechter as hs
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-import helpers.z_to_t as z_to_t
-import copy
 import mass_const_num_den as mcnd
-
-
-"""
-Remembering that the sfh masses are in a list [m_at_t_0, m_at_t_2 ... ]
-Given index, and step finds rate of increase between m_at_t_index and m_at_t_(index + t_step)
-Requires also the max values for each bin
-
-So we have a list of masses: imp_mass = [ [start_1, end_1], [start_2, end_2], ... , [start_n, end_n]]
-And a list of uncertainties: imp_mass_unc = [ [[start_+_1, start_-_1], [end_+_1, end_-_1]] ... ]  
-
-These are binned by start mass. uncertainties should be binned in same way.
-
-Each bin then calculates the average start and end mass and therefore the delta mass
-
-
-"""
-# where b = [ [[m0i, m0f], type], [[m1i, m1f], type] ... ]
-def average_growth_rate(sfh, b, t0, t1):
-
-  g_exp = sfh.g_exp
-  g_actual = sfh.g_actual()
-
-  count, mass = 0, 0
-  for galaxy in b:
-    ratio = g_exp[galaxy[1]] / g_actual[galaxy[1]]
-    mass += (galaxy[0][1] - galaxy[0][0]) * ratio
-    count += ratio
-
-
-  """
-  start = np.mean([j[0][0] for j in b]) if len(b) else 0
-  end = np.mean([j[0][1] for j in b]) if len(b) else 0
-  print(end - start)
-  """
-  #return((end - start) / (t0 - t1))
-  return(mass / (count * (t0 - t1)))
-
-# where b = [ [[[u0i+, u0i-], [u0f+, u0f-] ], type] ... ]
-def bin_uncertainty(sfh, b, t0, t1):
-  if len(b) == 0:
-    return([0,0])
-  """
-  start_pos_unc = math.sqrt(sum([(j[0][0][0])**2 for j in b]))/len(b)
-  start_neg_unc = math.sqrt(sum([(j[0][0][1])**2 for j in b]))/len(b)
-  end_pos_unc =   math.sqrt(sum([(j[0][1][0])**2 for j in b]))/len(b)
-  end_neg_unc =   math.sqrt(sum([(j[0][1][1])**2 for j in b]))/len(b)
-
-  diff_pos_unc = math.sqrt(start_pos_unc ** 2 + end_pos_unc ** 2)
-  diff_neg_unc = math.sqrt(start_neg_unc ** 2 + end_neg_unc ** 2)
-  #return([diff_pos_unc/(t0-t1), diff_neg_unc/(t0-t1)])
-  """
-  g_exp = sfh.g_exp
-  g_actual = sfh.g_actual()
-  count, sp, sn, ep, en = [0 for i in range(5)]
-  for galaxy in b:
-    ratio = g_exp[galaxy[1]] / g_actual[galaxy[1]]
-    count += ratio
-    sp += (ratio * galaxy[0][0][0]) ** 2
-    sn += (ratio * galaxy[0][0][1]) ** 2
-    ep += (ratio * galaxy[0][1][0]) ** 2
-    en += (ratio * galaxy[0][1][1]) ** 2
-  sp, sn, ep, en = [math.sqrt(i) / count for i in [sp, sn, ep, en]]
-  dp = math.sqrt(sp ** 2 + ep ** 2)
-  dn = math.sqrt(sn ** 2 + en ** 2)
-
-  #print(diff_neg_unc, dn)
-  #print(diff_pos_unc, dp)
-  return([dp/(t0-t1), dn/(t0-t1)])
-
-
-# where b = [ [[m0i, m0f], type], [[m1i, m1f], type] ... ]
-def average_bin_start(sfh, b):
-  g_exp = sfh.g_exp
-  g_actual = sfh.g_actual()
-  count, mass = 0, 0
-
-  for galaxy in b:
-    ratio = g_exp[galaxy[1]] / g_actual[galaxy[1]]
-    count += ratio
-    mass += galaxy[0][0] * ratio
-
-  mean = math.log10(mass / count) if len(b) else '-inf'
-  #old = math.log10(np.mean([i[0][0] for i in b])) if len(b) else '-inf'
-  return(mean)
-
-def uncertainty_bin_start(sfh, b, center):
-  c = 10**center
-  if len(b) == 0:
-    return([-np.inf,np.inf])
-  """
-  start_pos_unc = math.sqrt(sum([(j[0][0][0])**2 for j in b]))/len(b)
-  start_neg_unc = math.sqrt(sum([(j[0][0][1])**2 for j in b]))/len(b)
-
-  start_pos_unc = math.log10(c + start_pos_unc) - center
-  start_neg_unc = center - math.log10(c - start_neg_unc)
-  #return([start_pos_unc, start_neg_unc])
-  """
-  g_exp = sfh.g_exp
-  g_actual = sfh.g_actual()
-  count, sp, sn = [0 for i in range(3)]
-  for galaxy in b:
-    ratio = g_exp[galaxy[1]] / g_actual[galaxy[1]]
-    count += ratio
-    sp += (ratio * galaxy[0][0][0]) ** 2
-    sn += (ratio * galaxy[0][0][1]) ** 2
-  sp, sn = [math.sqrt(i) / count for i in [sp, sn]]
-  sp = math.log10(c + sp) - center
-  sn = center - math.log10(c - sn)
-  return([sp, sn])
-
-# Given an index, returns the z value and the t value that that z corresponds to (wrt sfh)
-def z_and_t_from_index_t_step(index, t_step, sfh):
-  z0 = sfh.z_times[index]
-  t0 = z_to_t.t_from_z(z0)
-  try:
-    z1 = sfh.z_times[index + t_step]
-    t1 = z_to_t.t_from_z(z1)
-  except IndexError:
-    sys.exit('Index error')
-  return(z0, t0, z1, t1)
 
 # Weisz
 def sf_m_at_z(bin_maxes, index, t_step):
@@ -138,7 +18,7 @@ def sf_m_at_z(bin_maxes, index, t_step):
   masses, masses_unc = sfh.abs_mass()
   g_loc = sfh.get_loc()
 
-  z0, t0, z1, t1 = z_and_t_from_index_t_step(index, t_step, sfh)
+  z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh)
   gal_mass = [[galaxy[index], galaxy[index + t_step]] for galaxy in masses]
   gal_mass_unc = [[galaxy[index], galaxy[index + t_step]] for galaxy in masses_unc]
 
@@ -161,24 +41,71 @@ def sf_m_at_z(bin_maxes, index, t_step):
   # Ignore first bin - should always be empty
   for i in range(1, len(orig_bins)):
     # Make each bin the rate of change of mass in that bin
-    bins.append(average_growth_rate(sfh, orig_bins[i][:], t0, t1))
+    bins.append(wh.average_growth_rate(sfh, orig_bins[i][:], t0, t1))
     # Make each bins_unc the uncertainty in that bin (assuming we are summing the things)
-    bins_unc.append(bin_uncertainty(sfh, orig_bins_unc[i][:], t0, t1))
+    bins_unc.append(wh.bin_uncertainty(sfh, orig_bins_unc[i][:], t0, t1))
     # Calc the avg start mass for each bin **LOG10**
-    bins_center.append(average_bin_start(sfh, orig_bins[i][:]))
+    bins_center.append(wh.average_bin_start(sfh, orig_bins[i][:]))
     # Calc the uncertainty on this avg start mass
-    bins_center_unc.append(uncertainty_bin_start(sfh, orig_bins_unc[i][:], bins_center[-1]))
+    bins_center_unc.append(wh.uncertainty_bin_start(sfh, orig_bins_unc[i][:], bins_center[-1]))
 
   return(bins, bins_unc, bins_center, bins_center_unc)
 
 # We want to see how much a galaxy that starts at mass x at z0 grows by z1
 def schechter_sf_m_at_z(bins_center, index, t_step):
+  print(bins_center, index, t_step)
+  ### OLD
   sfh = data.sfh()
-  z0, t0, z1, t1 = z_and_t_from_index_t_step(index, t_step, sfh)
+  z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh)
+  o_bins = []
+  for m in bins_center:
+    m3 = mcnd.growth_over_time(m, z0, z1)
+    o_bins.append( ((10 ** m3) - (10 ** m)) / (t0 - t1))
+
+  print(o_bins)
+  # Need to do this differently.
+  # Determine the number density of m at z0 (1)
+  # Generate an SMF at z1, correct for mergers (2)
+  # Look through z1 SMF to find number density closest to number density of m0 (m1)
+  ### NEW
+  sfh = data.sfh()
+  z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh)
   bins = []
   for m in bins_center:
-    m1 = mcnd.growth_over_time(m, z0, z1)
+    # (1)
+    target = hs.param_dub_schechter(m, z0) # This is the number density that we want
+    # (2)
+    step, SMF = 10, []
+    test_masses = [i/step for i in range(int(3*step), int(12*step))]
+    for i in test_masses:
+      SMF.append(hs.param_dub_schechter(i, z1))
+
+    # (3)
+    old_SMF = copy.copy(SMF)
+
+    for i in range(len(test_masses)):
+      res = hs.integrated_merger_corr(test_masses[i], z0, z1)
+      d_nd = sum([i[1] for i in res]) # delta number density
+      ### Additive correction
+      for j in res:
+        parents = [math.log10(10**test_masses[i] / (j[0] + 1)), math.log10(10**test_masses[i] * j[0]/(j[0] + 1))]
+        for k in parents:
+          for l in range(len(test_masses)):
+            if k > test_masses[l] > (k-1/step): # fixes silly spike at the beginning
+              SMF[l] += j[1]
+              break
+      ### Negative correction
+      SMF[i] -= d_nd
+
+    graph.line([old_SMF, SMF], x=test_masses)
+    # (4)
+    for i in range(len(test_masses)):
+      if SMF[i] < target:
+        m1 = test_masses[i]
+        break
     bins.append( ((10 ** m1) - (10 ** m)) / (t0 - t1))
+    print(bins)
+  ###
   return(bins)
 
 # This is the third option - sfr data
@@ -246,7 +173,7 @@ def plot_sf_m_at_z():
     t_step = t_step_list[i] # Compensates for dense observations at later times
     # work out the start indicies
     index = h.find_nearest(sfh.z_times, z[i])
-    z0, t0, z1, t1 = z_and_t_from_index_t_step(index, t_step, sfh)
+    z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh)
     title = str(round(z0, 3)) + '-' + str(round(z1, 4))
 
     # Get the growth vs mass data (at this z) from the SFH
@@ -263,7 +190,10 @@ def plot_sf_m_at_z():
       graph.line6([bins, s_bins, sanity_bins], [bins_center, ext_bins_center, ext_bins_center], i, gs, info=dict({'title6': 'Z = ' + title}, **info), params=dict({'yerr': [0], 'yerr_vals': bins_unc, 'xerr': [0], 'xerr_vals': bins_center_unc}, **params))
     else:
       graph.line6([bins, s_bins], [bins_center, ext_bins_center], i, gs, info=dict({'title6': 'Z = ' + title}, **info), params=dict({'yerr': [0], 'yerr_vals': bins_unc, 'xerr': [0], 'xerr_vals': bins_center_unc}, **params))
+    plt.show()
   plt.show()
 
 if __name__ == "__main__":
+  if sys.version[0] != '3':
+    sys.exit()
   plot_sf_m_at_z()

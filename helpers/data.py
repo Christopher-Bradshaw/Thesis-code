@@ -186,9 +186,9 @@ class sfh:
     return([round(z_to_t.z_from_t(10 ** i / 10 ** 9), 5) for i in self.legend])
 
   # Returns true mass (NOTE, not log10) for all masses over time. Similar for uncertainties
-  def abs_mass(self):
+  # if frac_unc, use simplified 50% error mechanism
+  def abs_mass(self, frac_unc = True):
     c = 0.64 # constant factor taking into account death
-    frac_unc = True # just set error to be 50% of mass
     # mass over time, their uncertainties
     abs_masses, abs_masses_unc = [], []
     for i in range(len(self.mass)): # For each galaxy
@@ -210,17 +210,6 @@ class sfh:
 
         abs_masses[-1].append(current_mass)
         abs_masses_unc[-1].append([pos_error, neg_error])
-
-      """
-      abs_masses.append([math.log10(j * self.total_mass[i] * 10**6) for j in self.mass[i]])
-      # These uncertainties are wrong as they do not take into account the uncertainty on the total mass
-      abs_masses_unc.append([
-        [
-          math.log10(j[0] * self.total_mass[i] * 10**6) if j[0] != 0 else float("-inf"),
-          math.log10(j[1] * self.total_mass[i] * 10**6) if j[1] != 0 else float("-inf")
-        ] for j in self.mass_unc[i]
-      ])
-      """
     return(abs_masses, abs_masses_unc)
 
 
@@ -233,13 +222,14 @@ class sfh:
   names = ['Andromeda I', 'Andromeda II', 'Andromeda III', 'Andromeda V', 'Andromeda VI', 'Andromeda VII', 'Andromeda XI', 'Andromeda XII', 'Andromeda XIII', 'Carina', 'Cetus', 'Canes Venetici I', 'Canes Venetici II', 'DDO 210', 'Draco', 'Fornax', 'Hercules', 'IC 10', 'IC 1613', 'IC 1613', 'Leo A', 'Leo A', 'Leo I', 'Leo II', 'Leo IV', 'Leo T', 'LGS 3', 'M32', 'NGC 147', 'NGC 185', 'NGC 185', 'NGC 185', 'NGC 205', 'NGC 205', 'NGC 205', 'NGC 6822', 'NGC 6822', 'NGC 6822', 'Pegasus', 'Phoenix', 'Phoenix', 'Sag DIG', 'Sagittarius', 'Sagittarius', 'Sculptor', 'Sculptor', 'Sex A', 'Sex A', 'Sex B', 'Tucana', 'Ursa Minor', 'WLM', 'WLM']
   g_type = ['dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dSph', 'dTrans', 'dSph', 'dSph', 'dSph', 'dIrr', 'dIrr', 'dIrr', 'dIrr', 'dIrr', 'dSph', 'dSph', 'dSph', 'dTrans', 'dTrans', 'dE', 'dE', 'dE', 'dE', 'dE', 'dE', 'dE', 'dE', 'dIrr', 'dIrr', 'dIrr', 'dTrans', 'dTrans', 'dTrans', 'dIrr', 'dSph', 'dSph', 'dSph', 'dSph', 'dIrr', 'dIrr', 'dIrr', 'dSph', 'dSph', 'dIrr', 'dIrr']
   # (A)ndromeda, our (G)alaxy, (L)ocal group, (N)earby
-  g_loc = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'G', 'L', 'G', 'G', 'L', 'G', 'G', 'G', 'A', 'L', 'L', 'L', 'L', 'GL', 'G', 'G', 'GL', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'GL', 'GL', 'GL', 'AL','GL', 'GL', 'L', 'G', 'G', 'G', 'G', 'N', 'N', 'N', 'L', 'G', 'L', 'L']
-  def get_loc(self):
-    return(['L' if i == 'N' else i for i in [i[0] if i == 'AL' or i == 'GL' else i for i in self.g_loc]])
+  g_loc = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'G', 'L', 'G', 'G', 'L', 'G', 'G', 'G', 'A', 'L', 'L', 'L', 'L', 'GL', 'G', 'G', 'LG', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'LG', 'LG', 'LG', 'LA','LG', 'LG', 'L', 'G', 'G', 'G', 'G', 'N', 'N', 'N', 'L', 'G', 'L', 'L']
 
-  g_exp = {'A': 0.3, 'G': 0.3, 'L':0.4} # Expected percentages
+  def get_loc(self):
+    return(['L' if i[0] == 'N' else i[0] for i in self.g_loc])
+
+  g_exp = {'A': 33/100, 'G': 27/100, 'L': 40/100} # Expected percentages
   def g_actual(self):
-    totals = {'A': self.g_loc.count('A') + self.g_loc.count('AL'), 'G': self.g_loc.count('G') + self.g_loc.count('GL'), 'L': self.g_loc.count('L') + self.g_loc.count('N')}
+    totals = {'A': sum([self.g_loc.count(i) for i in ['A', 'AL']]), 'G': sum([self.g_loc.count(i) for i in ['G', 'GL']]), 'L': sum([self.g_loc.count(i) for i in ['L', 'N']])}
     perc = {}
     for key in totals:
       perc[key] = totals[key] / sum(totals.values())
