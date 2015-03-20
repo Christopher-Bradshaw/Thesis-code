@@ -41,8 +41,7 @@ if __name__ == "__main__":
     for i in each[1]:
       res.append([])
       for j in x:
-        #res[-1].append(h.param_dub_schechter(j, i[-1]))
-        res[-1].append(h.dub_schechter(j, *i[:-1]))
+        res[-1].append(h.double_schechter(j, *i[:-1]))
 
     graph.line(res, x, dict({'title': each[0] + ' Double'}, **info))
 
@@ -55,18 +54,16 @@ if __name__ == "__main__":
 
     graph.line(res, x, dict({'title': each[0] + ' Single'}, **info))
 
+
   s = data.schechter()
-  ### Plot parameterised schechter function?
+  ### Plot parameterised schechter function
   info = {'xlabel': r'$\mathregular{log(M/M_\odot)}$', 'ylabel': r'$\mathregular{log(\phi Mpc^3/dex)}$', 'legend': s.z_range, 'xlim': [7.75, 12.25], 'ylim': [-5.75, -0.75]}
   x = [i/10 for i in range(75, 125)]
   res = []
   for i in s.z_avg: # For each z value
-    print(i)
     res.append([])
     for j in x: # Lots of points!
-      res[-1].append(h.param_dub_schechter(j, i))
-    break
-  print(res)
+      res[-1].append(h.param_double_schechter(j, i))
   graph.line(res, x, dict({'title': 'Paramaterized Double Schecter'}, **info))
 
 

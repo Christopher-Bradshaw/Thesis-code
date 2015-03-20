@@ -7,8 +7,8 @@ import helpers.weisz as wh
 
 
 class Test_weisz_helpers(unittest.TestCase):
-  def setUp(self):
-    #self.g_actual = data.sfh().g_actual() # This needs to be done for each bin
+  @classmethod
+  def setUpClass(self):
     self.g_exp = {'L': 0.4, 'G': 0.2, 'A': 0.4} # not real - makes testing easier
 
   def test_g_actual_bins(self):

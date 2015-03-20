@@ -14,9 +14,10 @@ class Test_whitaker_helpers(unittest.TestCase):
         [[1.5, 1.0],  [0.99, 0.51, 1.31], 'boundaries conditions']
     ]
     for i in data:
-      res = wh.weight_parameters(*i[0])
-      for j in range(3):
-        self.assertAlmostEqual(res[j], i[1][j], places = 3)
+      with self.subTest(i=i):
+        res = wh.weight_parameters(*i[0])
+        for j in range(3):
+          self.assertAlmostEqual(res[j], i[1][j], places = 3)
 
   def test_weight_params_fails(self):
     data = [
@@ -25,8 +26,8 @@ class Test_whitaker_helpers(unittest.TestCase):
         [[1.1, 1.4], 'z1 > z0']
     ]
     for i in data:
-      with self.assertRaises(RuntimeError, msg = i[1]):
+      with self.subTest(i=i) and self.assertRaises(RuntimeError, msg = i[1]):
         wh.weight_parameters(*i[0])
 
 if __name__ == "__main__":
-  unittest.main(verbosity=3)
+  unittest.main(verbosity=2)

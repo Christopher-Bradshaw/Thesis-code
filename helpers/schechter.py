@@ -13,7 +13,7 @@ def schechter(m, ms, a, phi_s):
   return(math.log10(ret))
 
 # Input is exactly the same as data.schechter.double (except for no z) and required m
-def dub_schechter(m, ms, a1, phi_s1, a2, phi_s2):
+def double_schechter(m, ms, a1, phi_s1, a2, phi_s2):
   phi_s1 = 10 ** phi_s1
   phi_s2 = 10 ** phi_s2
 
@@ -21,16 +21,14 @@ def dub_schechter(m, ms, a1, phi_s1, a2, phi_s2):
   b = phi_s1 * 10 ** ((m - ms) * a1) + phi_s2 * 10 ** ((m - ms) * a2)
   return(math.log10(a * b))
 
-def param_dub_schechter(m, z):
+def param_double_schechter(m, z):
   a1 = -0.39
   a2 = -1.53
-  phi_s1 = 10 ** (-2.46 + 0.07*z - 0.28*z*z)
-  phi_s2 = 10 ** (-3.11 - 0.18*z - 0.03*z*z)
+  phi_s1 = -2.46 + 0.07*z - 0.28*z*z
+  phi_s2 = -3.11 - 0.18*z - 0.03*z*z
   ms = 10.72 - 0.13*z + 0.11*z*z
+  return(double_schechter(m, ms, a1, phi_s1, a2, phi_s2))
 
-  a = math.log(10) * math.e ** (-10 ** (m - ms)) * 10 ** (m - ms)
-  b = phi_s1 * 10 ** ((m - ms) * a1) + phi_s2 * 10 ** ((m - ms) * a2)
-  return(math.log10(a * b))
 
 # Given a min value, a max value, a target finds the value closest to the target after some number of iterations
 # Target is a number density

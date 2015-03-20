@@ -15,8 +15,9 @@ SFR
     Code is butt ugly. Clean up and write tests (1) 
 
 
-
-
+TESTS
+  Use subTest everywhere it should be
+  Use setUpClass instead of setUp where applicable
 
 
 
@@ -34,3 +35,5 @@ ERRORS FOUND
 
 QUESTIONS
   Ensure that SFH data should be multiplied by 0.64
+
+  Phi in zfourge data is log10 and not ln?

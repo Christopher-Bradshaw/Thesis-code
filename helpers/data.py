@@ -82,7 +82,7 @@ class schechter:
       [10.65, -0.43, -3.92, 0.35 ]
   ]
 
-  # M a1 phi1 a1 phi2 z, oldest to newest
+  # M a1 phi1 a2 phi2 z, oldest to newest
   double = [
       [10.74,  1.62, -4.54, -1.57, -3.69, 2.75 ],
       [10.69,  1.03, -3.80, -1.33, -3.26, 2.25 ],
