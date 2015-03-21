@@ -48,7 +48,5 @@ class Test_schechter_functions(unittest.TestCase):
         self.assertAlmostEqual(hs.param_double_schechter(*i), math.log10(expected))
 
 
-
-
 if __name__ == "__main__":
   unittest.main(verbosity=2)

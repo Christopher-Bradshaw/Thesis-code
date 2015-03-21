@@ -27,3 +27,18 @@ class Test_helpers(unittest.TestCase):
 
     val, vals = 1, [0.3, 0.9, 0.7, 1.1]
     self.assertEqual(h.find_nearest(vals, val), 1)
+
+  def test_bins_centers(self):
+    data = [
+        [[2, 0, 1], [0.25, 0.75]],
+        [[50, 0, 1], [0.01 + 0.02*i for i in range(50)]],
+        [[1, 0, 1], [0.5]],
+    ]
+
+    for i in data:
+      with self.subTest(i=i):
+        self.assertEqual(h.bins_centers(*i[0]), i[1])
+
+
+if __name__ == "__main__":
+  unittest.main(verbosity=2)

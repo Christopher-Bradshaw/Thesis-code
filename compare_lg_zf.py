@@ -47,25 +47,12 @@ def sf_m_at_z(bin_maxes, index, t_step):
   return(bins, bins_unc, bins_center, bins_center_unc)
 
 # We want to see how much a galaxy that starts at mass x at z0 grows by z1
-def schechter_sf_m_at_z(bins_center, index, t_step):
-  print(bins_center, index, t_step)
-  ### OLD
-  sfh = data.sfh()
-  z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh.z_times)
-  o_bins = []
-  for m in bins_center:
-    m3 = hs.growth_over_time(m, z0, z1)
-    o_bins.append( ((10 ** m3) - (10 ** m)) / (t0 - t1))
-
-  print(o_bins)
-  return(o_bins)
+def schechter_sf_m_at_z(bins_center, z0, z1):
   # Need to do this differently.
   # Determine the number density of m at z0 (1)
   # Generate an SMF at z1, correct for mergers (2)
   # Look through z1 SMF to find number density closest to number density of m0 (m1)
   ### NEW
-  sfh = data.sfh()
-  z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh.z_times)
   bins = []
   for m in bins_center:
     # (1)
@@ -75,7 +62,6 @@ def schechter_sf_m_at_z(bins_center, index, t_step):
     test_masses = [i/step for i in range(int(3*step), int(12*step))]
     for i in test_masses:
       SMF.append(hs.param_dub_schechter(i, z1))
-
     # (3)
     old_SMF = copy.copy(SMF)
 
@@ -127,11 +113,13 @@ def plot_sf_m_at_z():
     index = h.find_nearest(sfh.z_times, z[i])
     z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh.z_times)
     title = str(round(z0, 3)) + '-' + str(round(z1, 4))
+    print(z0, t0, z1, t1)
+    sys.exit()
 
     # Get the growth vs mass data (at this z) from the SFH
     bins, bins_unc, bins_center, bins_center_unc = sf_m_at_z(bin_maxes, index, t_step)
     ext_bins_center = [3] + bins_center + [8]
-    s_bins = schechter_sf_m_at_z(ext_bins_center, index, t_step)
+    s_bins = schechter_sf_m_at_z(ext_bins_center, z0, z1)
     sanity_bins = sfr_data(ext_bins_center, z0, z1)
 
     # Plot these two things

@@ -44,7 +44,7 @@ def t_from_z(z):
 # Tells you the Z value of something t years ago
 # t must be in Gyrs
 def z_from_t(t):
-  iters = 100
+  iters = 50 # Check but think this is more than enough
   start = 0.
   stop = 6. # Gets you to 12.7 Gyrs ago...
   target = t
@@ -58,6 +58,9 @@ def z_from_t(t):
       start = (start + stop) / 2
     else: # Unlikely...
       return((start + stop) / 2)
+  if stop == 6:
+    raise Exception('Too long ago - change stop time of search')
+
   return((start + stop)/ 2)
 
 

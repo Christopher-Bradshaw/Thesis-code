@@ -19,3 +19,6 @@ def z_and_t_from_index_t_step(index, t_step, z_times):
     raise IndexError('t_step was too great')
 
   return(z0, t0, z1, t1)
+
+def bins_centers(bins, start, stop):
+  return([start + (stop-start)/bins * i + (stop-start)/bins/2 for i in range(bins)])

@@ -64,8 +64,9 @@ def line(data, x=[], info={}, params={}, af1=None):
 
   af1 = settings(info, af1)
 
-  for y in data:
-    af1 = plt.plot(x, y, **params)
+  for i, y in enumerate(data):
+    ex = x[i] if type(x[i]) == list else x
+    af1 = plt.plot(ex, y, **params)
 
   if 'legend' in info:
     plt.legend(info['legend'], loc = "lower left")
