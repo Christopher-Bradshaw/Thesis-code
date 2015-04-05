@@ -1,0 +1,25 @@
+We start with some smf a at z0
+We end with another smf b at z1
+
+In the process of getting from a - b there are some mergers.
+
+### One
+This means that in b there are some galaxies that are made up of two galaxies
+We want to break each of those galaxies back into their component parts.
+
+for various final masses (m at b)
+  They have number density y
+  for various mass ratios ranges (u)
+    find the number of mergers with ratio within u galaxies of mass m have undergone between a and b (mu)
+    add y * mu to galaxies of the correct masses. subtract y * mu to glaxies of m
+
+### Other way
+This means that in a there are some galaxies that do not exist in b
+Every time there is a merger resulting in a galaxy of mass m at ratio r, a galaxy of mass m/(r+1) vanishes and a galaxy of (mr/(r+1)) too
+
+For various start masses (m at a)
+  They have number density y
+  Assume this is the smaller partner
+  for various mass ratio
+
+
