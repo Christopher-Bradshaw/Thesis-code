@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
 import sys
-import copy
+from multiprocessing import Pool
 import helpers.data as data
 import helpers.graph as graph
 import helpers.helpers as h
 import helpers.weisz as wh
 import helpers.whitaker as h_whit
 import helpers.schechter as hs
+import helpers.merger_correction as hmc
+import helpers.z_to_t as z_to_t
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -46,49 +48,22 @@ def sf_m_at_z(bin_maxes, index, t_step):
 
   return(bins, bins_unc, bins_center, bins_center_unc)
 
+def sf_m_at_z_fit(bins, bins_center, ext_bins_center):
+  bins = [math.log10(i) for i in bins]
+  bins_fit = np.polyfit(bins_center, bins, 2)
+  out = []
+  for i in ext_bins_center:
+    out.append(10 ** (bins_fit[0] * i + bins_fit[1]))
+  return(out)
+
 # We want to see how much a galaxy that starts at mass x at z0 grows by z1
 def schechter_sf_m_at_z(bins_center, z0, z1):
-  # Need to do this differently.
-  # Determine the number density of m at z0 (1)
-  # Generate an SMF at z1, correct for mergers (2)
-  # Look through z1 SMF to find number density closest to number density of m0 (m1)
-  ### NEW
-  bins = []
-  for m in bins_center:
-    # (1)
-    target = hs.param_dub_schechter(m, z0) # This is the number density that we want
-    # (2)
-    step, SMF = 10, []
-    test_masses = [i/step for i in range(int(3*step), int(12*step))]
-    for i in test_masses:
-      SMF.append(hs.param_dub_schechter(i, z1))
-    # (3)
-    old_SMF = copy.copy(SMF)
+  print(z0)
+  pool = Pool(processes=4)
+  bins = pool.starmap(hmc.correct, [[i, z0, z1] for i in bins_center])
 
-    for i in range(len(test_masses)):
-      res = hs.integrated_merger_corr(test_masses[i], z0, z1)
-      d_nd = sum([i[1] for i in res]) # delta number density
-      ### Additive correction
-      for j in res:
-        parents = [math.log10(10**test_masses[i] / (j[0] + 1)), math.log10(10**test_masses[i] * j[0]/(j[0] + 1))]
-        for k in parents:
-          for l in range(len(test_masses)):
-            if k > test_masses[l] > (k-1/step): # fixes silly spike at the beginning
-              SMF[l] += j[1]
-              break
-      ### Negative correction
-      SMF[i] -= d_nd
-
-    graph.line([old_SMF, SMF], x=test_masses)
-    # (4)
-    for i in range(len(test_masses)):
-      if SMF[i] < target:
-        m1 = test_masses[i]
-        break
-    bins.append( ((10 ** m1) - (10 ** m)) / (t0 - t1))
-    print(bins)
-  ###
   return(bins)
+
 
 # This is the third option - sfr data. NB: z0 > z1
 def sfr_data(ext_bins_center, z0, z1):
@@ -98,39 +73,44 @@ def sfr_data(ext_bins_center, z0, z1):
   return(bins)
 
 def plot_sf_m_at_z():
-  z = [3, 2, 1, 0.5, 0.1, 0.01]
-  info = {'xlim': [3.0, 9.0], 'ylim': [10, 100000000], 'ylog': True, 'xlabel6': r'$\mathregular{Start Mass \, log(M/M_\odot)}$', 'ylabel6': r'$\mathregular{\Delta M/\Delta t} \, M_\odot / Gyr$', 'legend6': ['Star Formation History', 'Parameterized Schechter Predictions']}
+  info = {'xlim': [3.0, 10.0], 'ylim': [10, 1e10], 'ylog': True, 'xlabel6': r'$\mathregular{Start Mass \, log(M/M_\odot)}$', 'ylabel6': r'$\mathregular{\Delta M/\Delta t} \, M_\odot / Gyr$', 'legend6': ['Star Formation History', 'Parameterized Schechter Predictions', 'Whitaker SFR']}
   params = {'marker': ['x', 'None', 'None'], 'linestyle': ['None', '-', '-']}
   gs = graph.setup6(info)
 
-  bin_maxes = [i for i in range(3, 9)]
-  bin_step = bin_maxes[1] - bin_maxes[0]
-  t_step_list = [1,1,1,3,5,15] # Time step
+  bin_maxes, z, t_step_list  = [i for i in range(3, 9)], [3, 2, 1, 0.5, 0.1, 0.01], [1,1,1,3,5,15]
   sfh = data.sfh()
+
   for i in range(len(z)):
     t_step = t_step_list[i] # Compensates for dense observations at later times
-    # work out the start indicies
     index = h.find_nearest(sfh.z_times, z[i])
     z0, t0, z1, t1 = h.z_and_t_from_index_t_step(index, t_step, sfh.z_times)
-    title = str(round(z0, 3)) + '-' + str(round(z1, 4))
-    print(z0, t0, z1, t1)
-    sys.exit()
+    if z0 > 3:
+      raise Exception('Z too high')
 
-    # Get the growth vs mass data (at this z) from the SFH
     bins, bins_unc, bins_center, bins_center_unc = sf_m_at_z(bin_maxes, index, t_step)
-    ext_bins_center = [3] + bins_center + [8]
-    s_bins = schechter_sf_m_at_z(ext_bins_center, z0, z1)
-    sanity_bins = sfr_data(ext_bins_center, z0, z1)
-
-    # Plot these two things
-    # Shows that I can interpolate...
-    #if z1 > 0.5:
-    #  graph.line6([bins, s_bins, sanity_bins, sanity_bins1, sanity_bins2], [bins_center, ext_bins_center, ext_bins_center, ext_bins_center, ext_bins_center], i, gs, info=dict({'title6': 'Z = ' + title}, **info), params=dict({'yerr': [0], 'yerr_vals': bins_unc, 'xerr': [0], 'xerr_vals': bins_center_unc}, **params))
-    if z1 > 0.5:
-      graph.line6([bins, s_bins, sanity_bins], [bins_center, ext_bins_center, ext_bins_center], i, gs, info=dict({'title6': 'Z = ' + title}, **info), params=dict({'yerr': [0], 'yerr_vals': bins_unc, 'xerr': [0], 'xerr_vals': bins_center_unc}, **params))
-    else:
-      graph.line6([bins, s_bins], [bins_center, ext_bins_center], i, gs, info=dict({'title6': 'Z = ' + title}, **info), params=dict({'yerr': [0], 'yerr_vals': bins_unc, 'xerr': [0], 'xerr_vals': bins_center_unc}, **params))
+    ext_bins_center = [3] + bins_center + [8, 8.5, 9, 9.5]
+    '''
+    bins_fit = sf_m_at_z_fit(bins, bins_center, ext_bins_center)
+    plt.plot(bins)
+    plt.plot(bins_fit)
     plt.show()
+    '''
+    s_bins = schechter_sf_m_at_z(ext_bins_center, z0, z1)
+    if z0 > 0.5:
+      sanity_bins = sfr_data(ext_bins_center, z0, z1)
+
+    p = dict({'yerr':[0], 'yerr_vals': bins_unc, 'xerr':[0], 'xerr_vals': bins_center_unc}, **params)
+    infoz = dict({'title6': 'Z = ' + str(round(z0, 3)) + '-' + str(round(z1, 4))}, **info)
+    if z1 > 0.5:
+      graph.line6(
+          [bins, s_bins, sanity_bins],
+          [bins_center, ext_bins_center, ext_bins_center],
+          i, gs, info=infoz, params=p)
+    else:
+      graph.line6(
+          [bins, s_bins],
+          [bins_center, ext_bins_center],
+          i, gs, info=infoz, params=p)
   plt.show()
 
 if __name__ == "__main__":

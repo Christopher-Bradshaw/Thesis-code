@@ -40,8 +40,7 @@ def binary_search(target, z, start=0, stop=0, iters=0):
   iters = iters if iters else 100
 
   for i in range(iters):
-    guess = param_dub_schechter((start+stop)/2, z)
-    # guess = dub_schechter((start+stop)/2, *z_params[:-1]) # when passing all params
+    guess = param_double_schechter((start+stop)/2, z)
     if guess < target:
       stop = (start + stop) / 2
     elif guess > target:

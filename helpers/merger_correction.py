@@ -1,6 +1,11 @@
 import helpers.z_to_t as z_to_t
 import math
+import statistics
+import numpy as np
 import helpers.helpers as h
+import helpers.schechter as hs
+import helpers.z_to_t as z_to_t
+import copy
 
 # Numbers of mergers per Gyr at specified start mass, ratio and redshift
 def merger_correction(M, u, z):
@@ -44,3 +49,46 @@ def integrated_uz_merger_correction(M, u0, u1, z0, z1):
     total_m += m_rate * time_step
   return(total_m)
 
+
+def correct(mass, z0, z1):
+  # Generate SMF
+  delta_t = z_to_t.t_from_z(z0) - z_to_t.t_from_z(z1)
+  m_step, m_start, m_end = 50, 2, 12
+  test_masses = [i/m_step for i in range(int(m_start*m_step), int(m_end*m_step))]
+  SMF = [10**hs.param_double_schechter(i, z1) for i in test_masses]
+  old_SMF = copy.copy(SMF)
+  # Correct for mergers
+  u_step = 10
+  mass_ratio_ranges = [10**-(i/u_step) for i in range(5*u_step)]
+
+  for i, m in enumerate(test_masses):
+    y = SMF[i]
+    for u in range(len(mass_ratio_ranges) - 1):
+      u1, u0 = mass_ratio_ranges[u], mass_ratio_ranges[u+1]
+      u_avg = statistics.mean([u0, u1])
+      mu = integrated_uz_merger_correction(m, u0, u1, z0, z1)
+
+      m1, m2 = math.log10(10**m/(u_avg + 1)), math.log10(10**m*u_avg/(u_avg + 1))
+      assert round(math.log10(sum([10**m1, 10**m2])), 2) == round(m, 2)
+
+      # Find where in the SMF these two will come
+      m1, m2 = [int((mx - m_start) * m_step) for mx in [m1, m2]]
+      for mx in [m1, m2]:
+        if mx < 0:
+          continue
+        SMF[mx] += y * mu # some mult for width - appears no
+      SMF[i] -= y * mu
+
+  # Compare to at z0
+  target = 10**hs.param_double_schechter(mass, z0)
+  # SMF is monotonically decreasing, so look though until less than target
+  new_mass = np.interp(target, SMF[::-1], test_masses[::-1])
+  ######### TEST
+  '''
+  pSMF, p_oldSMF = [[math.log10(i) for i in j] for j in [SMF, old_SMF]]
+  z0_SMF = [hs.param_double_schechter(i, z0) for i in test_masses]
+  graph.line([pSMF, p_oldSMF, z0_SMF], x=test_masses)
+  plt.show()
+  '''
+  ########
+  return((10**new_mass - 10 ** mass) / delta_t)

@@ -1,9 +1,19 @@
 #!/usr/bin/python3
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib
 import sys
 
+# Set this up for presentation mode
+pres = True
+size = '12'
+if pres:
+  matplotlib.rc('xtick', labelsize=18)
+  matplotlib.rc('ytick', labelsize=18)
+  size = '22'
+
 def settings(info, af):
+
   if 'xlog' in info and info['xlog'] == True:
     af.set_xscale('log')
   if 'ylog' in info and info['ylog'] == True:
@@ -13,11 +23,11 @@ def settings(info, af):
   if 'ylim' in info:
     af.set_ylim(info['ylim'])
   if 'title' in info:
-    plt.title(info['title'])
+    plt.title(info['title'], {'size': size})
   if 'xlabel' in info:
-    plt.xlabel(info['xlabel'])
+    plt.xlabel(info['xlabel'], {'size': size})
   if 'ylabel' in info:
-    plt.ylabel(info['ylabel'])
+    plt.ylabel(info['ylabel'], {'size': size})
   if 'invert_xaxis' in info and info['invert_xaxis'] == True:
     af.invert_xaxis()
   return(af)
@@ -25,7 +35,10 @@ def settings(info, af):
 def actual_plot(x1, data, params, af):
 
   for i, y in enumerate(data):
-    x = x1 if type(x1[0]) != list else x1[i]
+    try:
+      x = x1 if type(x1[0]) != list else x1[i]
+    except IndexError:
+      x = x1
     color = next(af._get_lines.color_cycle)
 
     marker = params['marker'] if 'marker' in params else None
@@ -46,7 +59,9 @@ def actual_plot(x1, data, params, af):
       errors = [[i[1] for i in params['xerr_vals']], [i[0] for i in params['xerr_vals']]]
       af.errorbar(x, y, xerr=errors, fmt="none", ecolor=color)
 
-    plt.plot(x, y, marker=marker, linestyle=linestyle, color=color)
+    linewidth = params['linewidth'] if 'linewidth' in params else 1
+
+    plt.plot(x, y, marker=marker, linestyle=linestyle, color=color, linewidth=linewidth)
 
   return(af)
 
@@ -63,13 +78,15 @@ def line(data, x=[], info={}, params={}, af1=None):
     af1 = f1.add_subplot(111)
 
   af1 = settings(info, af1)
+  if 'comment' in info:
+    af1.text(0.4, 0.8, info['comment'], horizontalalignment='left', verticalalignment='top', transform = af1.transAxes)
 
-  for i, y in enumerate(data):
-    ex = x[i] if type(x[i]) == list else x
-    af1 = plt.plot(ex, y, **params)
+  af1 = actual_plot(x, data, params, af1)
+
+  legend_loc = info['legend_loc'] if 'legend_loc' in info else 'lower left'
 
   if 'legend' in info:
-    plt.legend(info['legend'], loc = "lower left")
+    plt.legend(info['legend'], loc = legend_loc, prop = {'size': '18'})
 
   return(af1)
 
@@ -136,5 +153,5 @@ def line6(data, x, num, gs, info={}, params={}):
 
   af = actual_plot(x, data, params, af)
 
-  if 'legend' in info:
-    plt.legend(info['legend'], loc = "lower left")
+  if 'legend6' in info and num == 2:
+    plt.legend(info['legend6'], loc = "lower right", prop = {'size':10})#, bbox_to_anchor=(1.6, -0.2))

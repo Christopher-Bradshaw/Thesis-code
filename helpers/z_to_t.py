@@ -5,9 +5,9 @@ Modified from code found here:
 http://www.astro.ucla.edu/~wright/CosmoCalc.html
 """
 import sys
-from math import *
+import math
 
-def t_from_z(z):
+def old_t_from_z(z):
   H0 = 69.6 # Hubble constant
   WM = 0.286                       # Omega(matter)
   WV = 1.0 - WM - 0.4165/(H0*H0)  # Omega(vacuum) or lambda
@@ -32,7 +32,7 @@ def t_from_z(z):
   n=1000         # number of points in integrals
   for i in range(n):
     a = az*(i+0.5)/n
-    adot = sqrt(WK+(WM/a)+(WR/(a*a))+(WV*a*a))
+    adot = math.sqrt(WK+(WM/a)+(WR/(a*a))+(WV*a*a))
     age = age + 1./adot
 
   zage = az*age/n
@@ -43,7 +43,7 @@ def t_from_z(z):
 # Would be nice to do this properly...
 # Tells you the Z value of something t years ago
 # t must be in Gyrs
-def z_from_t(t):
+def old_z_from_t(t):
   iters = 50 # Check but think this is more than enough
   start = 0.
   stop = 6. # Gets you to 12.7 Gyrs ago...
@@ -63,11 +63,15 @@ def z_from_t(t):
 
   return((start + stop)/ 2)
 
+c1, c2, coz, cot = 13.9, 13.1, 0.7, 6
+def t_from_z(z):
+  if z > 3:
+    raise Exception('Z too high!')
+  c = c1*(1/coz*(coz-z) if z < coz else 0) + c2*(1/coz*z if z < coz else 1)
+  return(c - (2*c/(1 + (1+z)**2)))
 
-if __name__ == "__main__":
-  print(t_from_z(0))
-  print(t_from_z(1))
-  print(t_from_z(6))
-
-  print(z_from_t(7.8173164479))
-  print(z_from_t(12.589254117941662))
+def z_from_t(t):
+  if t > 11.6:
+    raise Exception('T too high!')
+  c = c1*(1/cot*(cot-t) if t < cot else 0) + c2*(1/cot*t if t < cot else 1)
+  return((-2 + math.sqrt(-4 + 8 * c/(c-t)))/2)

@@ -6,7 +6,6 @@ Reads the star formation data from http://iopscience.iop.org/0004-637X/795/2/104
 import sys
 f = open('sfr_data', 'r')
 
-
 z1 = [0.5, 1, 1.5, 2]
 z2 = [i+0.5 for i in z1]
 zi = -1
@@ -27,4 +26,3 @@ for line in f:
 
 for i in out:
   print(i)
-

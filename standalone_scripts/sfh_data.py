@@ -13,13 +13,10 @@ if __name__ == "__main__":
       break
 
   legend = ['name', 'total'] + ["m" + str(i/10) for i in range(101, 65, -1)]
-  res = []
-  unc = []
-  unc_totals = []
-  names = []
-  totals = []
+  totals, res, unc, unc_totals, names = [], [], [], [], []
   res_locations = [6 + 5*i for i in range(50)]
   unc_locations =  [[5*i-2, 5*i] for i in range(1,52)]
+
   for line in f:
     x = [i for i in line[18:].split(' ') if i != '']
     totals.append(x[1])
@@ -31,14 +28,12 @@ if __name__ == "__main__":
     names.append(line[:18].rstrip(' '))
 
 
-  #print(unc_totals)
+  print(unc_totals)
   for i in unc:
     print(i, ',')
 
-  """
   for i in res:
     print(i)
   print(names)
   print(totals)
   print(legend)
-  """

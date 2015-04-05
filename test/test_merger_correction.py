@@ -48,34 +48,41 @@ class Test_merger_corr(unittest.TestCase):
 
 # This should generate graphs == to the top 3 on page 11 of the illustris paper
 def integrated_u_merger_graphs():
-  step, min_u = 10, [1/i for i in [4, 10, 100, 1000]]
+
+  step, us= 10, [4, 10, 100, 1000]
+  min_u = [1/i for i in us]
+  legend = ['u >= 1 / {}'.format(str(i)) for i in us]
   starts = [8, 8.2, 9.3, 10.3]
-  mass = [[10**(i/step) for i in range(int(j*step), int(12.3*step))] for j in starts]
+  mass = [[10**(i/step) for i in range(int(j*step), int(12*step))] for j in starts]
+
   for z in [0.1, 1, 2]:
     mergers = []
     for k, u in enumerate(min_u):
       mergers.append([])
       for i in mass[k]:
         mergers[-1].append(hmc.integrated_u_merger_correction(i, u, 1, z))
-    graph.line(mergers, x=mass, info={'xlog': True, 'ylog': True, 'ylim': [3e-3, 2e1], 'xlim': [6e7, 2e12]})
+    graph.line(mergers, x=mass, info={'xlog': True, 'ylog': True, 'ylim': [3e-3, 2e1], 'xlim': [6e7, 2e12], 'xlabel': 'Mass', 'ylabel': 'Mergers / Gyr', 'comment': 'Z = {}'.format(z), 'legend': legend, 'legend_loc': 'upper left'})
   plt.show()
 
 # This should generate graphs == to the second 3 on page 11 of the illustris paper
 def integrated_u_merger_graphs2():
   step, mass = 20, [1e9, 1e10, 1e11]
   mass_ratio = [10**(i/step) for i in range(-4*step, 0)]
+  legend = ['M = 10^{}'.format(str(int(math.log10(i)))) for i in mass]
   for z in [0.1, 1, 2]:
     mergers = []
     for m in mass:
       mergers.append([])
       for u in mass_ratio:
         mergers[-1].append(hmc.integrated_u_merger_correction(m, u, 1, z))
-    graph.line(mergers, x=mass_ratio, info={'xlog': True, 'ylog': True, 'ylim': [6e-4, 2e1], 'xlim': [1e-4, 1]})
+    graph.line(mergers, x=mass_ratio, info={'xlog': True, 'ylog': True, 'ylim': [6e-4, 2e1], 'xlim': [1e-4, 1], 'xlabel': 'Min Mass Ratio', 'ylabel': 'Mergers / Gyr', 'comment': 'Z = {}'.format(z), 'legend': legend, 'legend_loc': 'upper right'})
   plt.show()
 
 # This should generate graphs == to the top 3 on page 10 of the illustris paper
 def merger_graphs():
-  step, min_u = 10, [1/i for i in [4, 10, 100, 1000]]
+  step, us= 10, [4, 10, 100, 1000]
+  min_u = [1/i for i in us]
+  legend = ['u = 1 / {}'.format(str(i)) for i in us]
   starts = [8, 8.6, 9.6, 10.6]
   mass = [[10**(i/step) for i in range(int(j*step), int(12.3*step))] for j in starts]
   for z in [0.1, 1, 2]:
@@ -84,24 +91,27 @@ def merger_graphs():
       mergers.append([])
       for i in mass[k]:
         mergers[-1].append(hmc.merger_correction(i, u, z))
-    graph.line(mergers, x=mass, info={'xlog': True, 'ylog': True, 'ylim': [1e-2, 1e4], 'xlim': [6e7, 2e12]})
+    graph.line(mergers, x=mass, info={'xlog': True, 'ylog': True, 'ylim': [1e-2, 1e4], 'xlim': [6e7, 2e12], 'xlabel': 'Mass', 'ylabel': 'Mergers / Gyr', 'comment': 'Z = {}'.format(z), 'legend': legend, 'legend_loc': 'upper left'})
   plt.show()
 
 # This should generate graphs == to the second 3 on page 10 of the illustris paper
 def merger_graphs2():
   step, mass = 20, [1e9, 1e10, 1e11]
   mass_ratio = [10**(i/step) for i in range(-4*step, 0)]
+
+  legend = ['M = 10^{}'.format(str(int(math.log10(i)))) for i in mass]
+
   for z in [0.1, 1, 2]:
     mergers = []
     for m in mass:
       mergers.append([])
       for u in mass_ratio:
         mergers[-1].append(hmc.merger_correction(m, u, z))
-    graph.line(mergers, x=mass_ratio, info={'xlog': True, 'ylog': True, 'ylim': [2e-3, 1e5], 'xlim': [1e-4, 1]})
+    graph.line(mergers, x=mass_ratio, info={'xlog': True, 'ylog': True, 'ylim': [2e-3, 1e5], 'xlim': [1e-4, 1], 'xlabel': 'Mass Ratio', 'ylabel': 'Mergers / Gyr', 'comment': 'Z = {}'.format(z), 'legend': legend, 'legend_loc': 'upper right'})
   plt.show()
 
 if __name__ == "__main__":
-  if 0 and input('do you want graphs? (y/n)') == 'y':
+  if 1 and input('do you want graphs? (y/n)') == 'y':
     integrated_u_merger_graphs()
     integrated_u_merger_graphs2()
     merger_graphs()
