@@ -49,18 +49,14 @@ def integrated_uz_merger_correction(M, u0, u1, z0, z1):
     total_m += m_rate * time_step
   return(total_m)
 
-
-def correct(mass, z0, z1):
-  # Generate SMF
-  delta_t = z_to_t.t_from_z(z0) - z_to_t.t_from_z(z1)
+def correct_smf(z0, z1):
   m_step, m_start, m_end = 50, 2, 12
   test_masses = [i/m_step for i in range(int(m_start*m_step), int(m_end*m_step))]
-  SMF = [10**hs.param_double_schechter(i, z1) for i in test_masses]
-  old_SMF = copy.copy(SMF)
-  # Correct for mergers
   u_step = 10
   mass_ratio_ranges = [10**-(i/u_step) for i in range(5*u_step)]
 
+  SMF = [10**hs.param_double_schechter(i, z1) for i in test_masses]
+  uncorr_SMF = copy.copy(SMF)
   for i, m in enumerate(test_masses):
     y = SMF[i]
     for u in range(len(mass_ratio_ranges) - 1):
@@ -78,6 +74,12 @@ def correct(mass, z0, z1):
           continue
         SMF[mx] += y * mu # some mult for width - appears no
       SMF[i] -= y * mu
+  return(SMF, test_masses, uncorr_SMF) # return uncorr SMF for testing
+
+def correct(mass, z0, z1):
+  # Generate SMF
+  delta_t = z_to_t.t_from_z(z0) - z_to_t.t_from_z(z1)
+  SMF, test_masses, uncorr_SMF = correct_smf(z0, z1)
 
   # Compare to at z0
   target = 10**hs.param_double_schechter(mass, z0)

@@ -39,7 +39,10 @@ def actual_plot(x1, data, params, af):
       x = x1 if type(x1[0]) != list else x1[i]
     except IndexError:
       x = x1
-    color = next(af._get_lines.color_cycle)
+    if 'color' in params:
+      color = params['color'][i]
+    else:
+      color = next(af._get_lines.color_cycle)
 
     marker = params['marker'] if 'marker' in params else None
     if type(marker) == list:
@@ -61,6 +64,7 @@ def actual_plot(x1, data, params, af):
 
     linewidth = params['linewidth'] if 'linewidth' in params else 1
 
+    plt.gcf().tight_layout()
     plt.plot(x, y, marker=marker, linestyle=linestyle, color=color, linewidth=linewidth)
 
   return(af)

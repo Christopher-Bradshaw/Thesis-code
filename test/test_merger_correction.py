@@ -66,7 +66,8 @@ def integrated_u_merger_graphs():
 
 # This should generate graphs == to the second 3 on page 11 of the illustris paper
 def integrated_u_merger_graphs2():
-  step, mass = 20, [1e9, 1e10, 1e11]
+  #step, mass = 20, [1e9, 1e10, 1e11]
+  step, mass = 20, [1e4, 1e6, 1e8, 1e10, 1e11]
   mass_ratio = [10**(i/step) for i in range(-4*step, 0)]
   legend = ['M = 10^{}'.format(str(int(math.log10(i)))) for i in mass]
   for z in [0.1, 1, 2]:
